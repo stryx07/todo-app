@@ -43,8 +43,10 @@ pipeline {
                         // In a real scenario, use a specific healthcheck script or endpoint test
                         sleep 30
                         sh '''
-                            docker run --rm --network react-flask-mongodb-v1_backend curlimages/curl -v --fail http://api:5000/api/tasks || (docker logs react-flask-mongodb-v1-api-1 && exit 1)
-                        '''
+                            docker run --rm --network todo-app_backend curlimages/curl -v --fail http://api:5000/api/tasks 
+                            docker logs todo-app-api-1
+
+                          '''
                         echo "API Test Passed"
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
