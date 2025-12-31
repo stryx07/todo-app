@@ -5,7 +5,7 @@ pipeline {
         // Replace with your Docker Hub username
         DOCKER_HUB_USER = "stryx07"
         REGISTRY_CREDENTIALS_ID = 'docker-hub-credentials'
-        COMPOSE_PROJECT_NAME = "react-flask-mongodb-v1"
+        COMPOSE_PROJECT_NAME = "todo-app"
     }
 
     stages {
