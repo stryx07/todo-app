@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
     command: mongod --auth
     environment:
-      MONGO_INITDB_ROOT_USERNAME: salah
+      MONGO_INITDB_ROOT_USERNAME: ilyass
       MONGO_INITDB_ROOT_PASSWORD: test
       MONGO_INITDB_DATABASE: flaskdb
       MONGODB_DATA_DIR: /data/db
@@ -38,10 +38,10 @@ services:
       - "5000:5000"
     restart: on-failure
     environment:
-      MONGO_URI: mongodb://salah:test@mongodb:27017/flaskdb?authSource=admin
+      MONGO_URI: mongodb://ilyass:test@mongodb:27017/flaskdb?authSource=admin
       MONGODB_DATABASE: flaskdb
       MONGODB_HOSTNAME: mongodb
-      MONGODB_USERNAME: salah
+      MONGODB_USERNAME: ilyass
       MONGODB_PASSWORD: test
     volumes:
       # - ./backend:/app
