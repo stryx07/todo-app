@@ -1,4 +1,3 @@
-
 version: "3.9"
 
 services:
@@ -15,7 +14,7 @@ services:
     environment:
       # Make sure your frontend uses this to call the API from the browser
       # In React, reference it as process.env.REACT_APP_API_BASE
-      REACT_APP_API_BASE: http://localhost:5000
+      REACT_APP_API_BASE: http://api:5000  # Change to API container name
     networks:
       - frontend
     depends_on:
@@ -30,7 +29,7 @@ services:
     restart: unless-stopped
     command: ["mongod", "--auth"]
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ilyass
+      MONGO_INITDB_ROOT_USERNAME: ilyass  # Username updated to 'ilyass'
       MONGO_INITDB_ROOT_PASSWORD: test
       MONGO_INITDB_DATABASE: flaskdb
     volumes:
@@ -38,7 +37,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "mongosh", "--username", "salah", "--password", "test", "--eval", "db.runCommand({ ping: 1 })"]
+      test: ["CMD", "mongo", "--username", "ilyass", "--password", "test", "--eval", "db.runCommand({ ping: 1 })"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -56,14 +55,14 @@ services:
     restart: on-failure
     environment:
       # Connection string uses root user in admin DB for auth
-      MONGO_URI: mongodb://salah:test@mongodb:27017/flaskdb?authSource=admin
+      MONGO_URI: mongodb://ilyass:test@mongodb:27017/flaskdb?authSource=admin  # Updated to 'ilyass'
       # Optional: if your app reads these separately
       MONGODB_DATABASE: flaskdb
       MONGODB_HOSTNAME: mongodb
-      MONGODB_USERNAME: ilyass
+      MONGODB_USERNAME: ilyass  # Username updated to 'ilyass'
       MONGODB_PASSWORD: test
       # If you use Flask-CORS, you can set allowed origin:
-      CORS_ORIGIN: http://localhost:3000
+      CORS_ORIGIN: http://client:3000  # Updated to match frontend service name
     volumes:
       # Persist app data/logs if your app writes to /var/www
       - appdata:/var/www/
@@ -95,4 +94,5 @@ volumes:
     driver: local
   appdata:
     driver: local
+
 
