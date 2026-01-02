@@ -25,7 +25,7 @@ pipeline {
                     echo 'Running Bandit on Backend...'
                     sh '''
                         docker run --rm \
-                          -v $PWD/backend:/app \
+                          -v $WORKSPACE/backend:/app \
                           -w /app \
                           python:3.8-slim \
                           sh -c "pip install bandit -q && bandit -r ."
@@ -38,15 +38,17 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh 'docker compose up -d'
+                        echo "Starting Docker Compose..."
+                        sh 'docker-compose up -d'
 
+                        // Wait for containers to be ready
                         sleep 30
 
+                        echo "Running API Test..."
                         sh '''
                             docker run --rm \
                               --network todo-app_backend \
                               curlimages/curl --fail http://api:5000/api/tasks
-
                             docker logs todo-app-api-1
                         '''
 
@@ -55,7 +57,8 @@ pipeline {
                         currentBuild.result = 'FAILURE'
                         error("Test failed: ${e.message}")
                     } finally {
-                        sh 'docker compose down -v'
+                        echo "Cleaning up Docker Compose..."
+                        sh 'docker-compose down -v'
                     }
                 }
             }
@@ -68,6 +71,7 @@ pipeline {
                         'https://index.docker.io/v1/',
                         REGISTRY_CREDENTIALS_ID
                     ) {
+                        echo "Tagging and pushing Docker images..."
                         sh "docker tag todo-app-api ${DOCKER_HUB_USER}/todo-app-api:latest"
                         sh "docker push ${DOCKER_HUB_USER}/todo-app-api:latest"
 
