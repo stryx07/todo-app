@@ -1,5 +1,10 @@
-services:
 
+version: "3.9"
+
+services:
+  # ---------------------------
+  # Frontend (React / Vite etc.)
+  # ---------------------------
   client:
     build:
       context: ./frontend
@@ -7,28 +12,40 @@ services:
     tty: true
     ports:
       - "3000:3000"
-    # volumes:
-    #   - ./client:/app
-    #   - /app/node_modules
+    environment:
+      # Make sure your frontend uses this to call the API from the browser
+      # In React, reference it as process.env.REACT_APP_API_BASE
+      REACT_APP_API_BASE: http://localhost:5000
     networks:
       - frontend
+    depends_on:
+      - api
 
+  # -------------
+  # MongoDB
+  # -------------
   mongodb:
-    image: mongo
+    image: mongo:6
     container_name: mongo
     restart: unless-stopped
-    command: mongod --auth
+    command: ["mongod", "--auth"]
     environment:
-      MONGO_INITDB_ROOT_USERNAME: salah
+      MONGO_INITDB_ROOT_USERNAME: ilyass
       MONGO_INITDB_ROOT_PASSWORD: test
       MONGO_INITDB_DATABASE: flaskdb
-      MONGODB_DATA_DIR: /data/db
-      MONGODB_LOG_DIR: /dev/null
     volumes:
       - mongo-data:/data/db
     networks:
       - backend
+    healthcheck:
+      test: ["CMD", "mongosh", "--username", "salah", "--password", "test", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
+  # -------------------------
+  # API (Flask + Gunicorn)
+  # -------------------------
   api:
     build:
       context: ./backend
@@ -38,28 +55,44 @@ services:
       - "5000:5000"
     restart: on-failure
     environment:
+      # Connection string uses root user in admin DB for auth
       MONGO_URI: mongodb://salah:test@mongodb:27017/flaskdb?authSource=admin
+      # Optional: if your app reads these separately
       MONGODB_DATABASE: flaskdb
       MONGODB_HOSTNAME: mongodb
-      MONGODB_USERNAME: salah
+      MONGODB_USERNAME: ilyass
       MONGODB_PASSWORD: test
+      # If you use Flask-CORS, you can set allowed origin:
+      CORS_ORIGIN: http://localhost:3000
     volumes:
-      # - ./backend:/app
+      # Persist app data/logs if your app writes to /var/www
       - appdata:/var/www/
     depends_on:
       - mongodb
     networks:
       - backend
       - frontend
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
+# -------------------------
+# Networks
+# -------------------------
 networks:
   backend:
     driver: bridge
   frontend:
     driver: bridge
 
+# -------------------------
+# Volumes
+# -------------------------
 volumes:
   mongo-data:
     driver: local
   appdata:
     driver: local
+
